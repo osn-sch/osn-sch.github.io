@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КТП - Школа Основание</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Календарно-тематическое планирование</h1>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Фильтр по учителю:</label>
+                <select id="filter-teacher" class="border border-gray-300 rounded-md p-2 min-w-[200px] focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Все учителя</option>
+                    <option value="Шляпникова С.В.">Шляпникова С.В.</option>
+                    <option value="Аминова О.А.">Аминова О.А.</option>
+                    <option value="Окунцова М.Д.">Окунцова М.Д.</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Фильтр по классу:</label>
+                <select id="filter-class" class="border border-gray-300 rounded-md p-2 min-w-[150px] focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Все классы</option>
+                    <option value="6">6 класс</option>
+                    <option value="7">7 класс</option>
+                    <option value="8">8 класс</option>
+                </select>
+            </div>
+            <div class="ml-auto flex items-end">
+                <button onclick="addRow()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors shadow-sm font-medium flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    Добавить урок
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider">
+                        <th class="p-3 border-b font-semibold">Учитель</th>
+                        <th class="p-3 border-b font-semibold text-center">Класс</th>
+                        <th class="p-3 border-b font-semibold">Предмет</th>
+                        <th class="p-3 border-b font-semibold min-w-[300px]">Тема урока / содержание</th>
+                        <th class="p-3 border-b font-semibold w-[160px]">Плановая дата</th>
+                        <th class="p-3 border-b font-semibold w-[170px]">Статус</th>
+                        <th class="p-3 border-b font-semibold w-[60px] text-center">Удалить</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="text-gray-800 text-sm">
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Модальное окно для добавления записи -->
+        <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+            <div class="bg-white rounded-lg p-6 w-[500px] shadow-xl">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Новый урок</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm mb-1">Учитель</label>
+                        <select id="new-teacher" class="w-full border rounded p-2">
+                            <option value="Шляпникова С.В.">Шляпникова С.В.</option>
+                            <option value="Аминова О.А.">Аминова О.А.</option>
+                            <option value="Окунцова М.Д.">Окунцова М.Д.</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Класс</label>
+                        <input type="text" id="new-class" class="w-full border rounded p-2" placeholder="Например: 7">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Предмет</label>
+                        <input type="text" id="new-subject" class="w-full border rounded p-2" placeholder="Например: Алгебра">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Дата</label>
+                        <input type="date" id="new-date" class="w-full border rounded p-2">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm mb-1">Тема урока</label>
+                        <input type="text" id="new-topic" class="w-full border rounded p-2" placeholder="Содержание урока">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeModal()" class="px-4 py-2 border rounded hover:bg-gray-50">Отмена</button>
+                    <button onclick="saveNewRow()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const initialData = [{"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Числовые выражения", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Числовые выражения", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Выражения с переменными", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Выражения с переменными", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Сравнение значений выражений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Сравнение значений выражений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Свойства действий над числами", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Свойства действий над числами", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Тождества. Тождественные преобразования выражений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Тождества. Тождественные преобразования выражений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Контрольная работа № 1. Тема «Выражения»", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Уравнения с одной переменной", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Линейное уравнение с одной переменной", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Линейное уравнение с одной переменной", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Решение задач с помощью уравнений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Решение задач с помощью уравнений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Решение задач с помощью уравнений", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Статистические характеристики", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Среднее арифметическое. Размах и мода", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Среднее арифметическое. Размах и мода", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Медиана как статистическая характеристика. Подготовка к контрольной работе", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Алгебра", "topic": "Контрольная работа № 2. Тема «Уравнения»", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Геометрия", "topic": "Начальные геометрические сведения", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "7", "subject": "Геометрия", "topic": "Начальные геометрические сведения", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "8", "subject": "Алгебра", "topic": "Квадратные корни", "date": "", "status": "Запланировано"}, {"teacher": "Шляпникова С.В.", "class": "8", "subject": "Алгебра", "topic": "Квадратные корни", "date": "", "status": "Запланировано"}, {"teacher": "Аминова О.А.", "class": "6", "subject": "Русский язык", "topic": "Язык и речь", "date": "", "status": "Запланировано"}, {"teacher": "Аминова О.А.", "class": "6", "subject": "Русский язык", "topic": "Текст", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Повторение и углубление: главные члены предложения. Тире между подлежащим и сказуемым.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Повторение и углубление: главные члены предложения. Тире между подлежащим и сказуемым.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Второстепенные члены предложения. Дополнение (прямое/косвенное).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Второстепенные члены предложения. Дополнение (прямое/косвенное).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Определение. Согласованные и несогласованные определения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Определение. Согласованные и несогласованные определения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Приложение как разновидность определения. Знаки препинания при приложении.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Обстоятельство. Виды обстоятельств.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Обстоятельство. Виды обстоятельств.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Р.Р. Публицистическое сочинение (продолжение работы, начатой в I четверти).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Р.Р. Публицистическое сочинение (продолжение работы, начатой в I четверти).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Односоставные предложения. Назывные.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Определённо-личные предложения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Неопределённо-личные предложения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Безличные предложения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Безличные предложения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Р.Р. Изложение с элементами сочинения (или сжатое изложение).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Р.Р. Изложение с элементами сочинения (или сжатое изложение).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Повторение и систематизация за четверть. Подготовка к зачёту.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Повторение и систематизация за четверть. Подготовка к зачёту.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Резерв (праздничные дни / корректировка).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Русский язык", "topic": "Резерв (праздничные дни / корректировка).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Деепричастие: закрепление. Деепричастный оборот, знаки препинания при нём.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Деепричастие: закрепление. Морфологический разбор деепричастия.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Контрольная работа по теме «Деепричастие».", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Наречие как часть речи. Смысловые группы наречий.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Наречие как часть речи. Смысловые группы наречий.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Степени сравнения наречий. Сравнительная и превосходная степень.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Степени сравнения наречий. Сравнительная и превосходная степень.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Морфологический разбор наречия.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Слитное и раздельное написание НЕ с наречиями на -о/-е.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Слитное и раздельное написание НЕ с наречиями на -о/-е.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Буквы Е и И в приставках НЕ- и НИ- отрицательных наречий.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Одна и две буквы Н в наречиях на -о/-е.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Одна и две буквы Н в наречиях на -о/-е.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Буквы О и Е после шипящих на конце наречий.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Буквы О и А на конце наречий с приставками ИЗ-, ДО-, С-.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Дефис в наречиях.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Повторение и систематизация по теме «Наречие». Подготовка к итоговому срезу.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Повторение и систематизация по теме «Наречие». Подготовка к итоговому срезу.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Итоговый срез за четверть.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Резерв (праздничные дни / корректировка).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Русский язык", "topic": "Резерв (праздничные дни / корректировка).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: история создания, жанр, композиция. Гринёв на пути становления.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: история создания, жанр, композиция. Гринёв на пути становления.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: Пугачёв и пугачёвщина. Образ вождя.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: Пугачёв и пугачёвщина. Образ вождя.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: Маша Миронова. Тема чести и милосердия.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: Маша Миронова. Тема чести и милосердия.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Капитанская дочка»: итоговый анализ. Подбор аргументов для сочинения.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: история создания, сюжет, композиция. Переполох в уездном городе (д. 1–2).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: история создания, сюжет, композиция. Переполох в уездном городе (д. 1–2).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: Хлестаков и хлестаковщина (д. 3). Сцена вранья.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: Хлестаков и хлестаковщина (д. 3). Сцена вранья.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: парад чиновников (д. 4). Разоблачение пороков.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: парад чиновников (д. 4). Разоблачение пороков.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: финал. Немая сцена. Подготовка к сочинению.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "8", "subject": "Литература", "topic": "«Ревизор»: финал. Немая сцена. Подготовка к сочинению.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "И.С. Тургенев: страницы биографии. «Записки охотника» как цикл.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Бирюк»: быт и нравы крепостной деревни. Образ главного героя.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Бирюк»: быт и нравы крепостной деревни. Образ главного героя.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Бирюк»: мастерство пейзажа. Авторская позиция. Стихотворения в прозе («Русский язык», «Близнецы»).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Бирюк»: мастерство пейзажа. Авторская позиция. Стихотворения в прозе («Русский язык», «Близнецы»).", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "Н.А. Некрасов: страницы биографии. «Русские женщины» («Княгиня Трубецкая»): историческая основа, образ героини.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "Н.А. Некрасов: страницы биографии. «Русские женщины» («Княгиня Трубецкая»): историческая основа, образ героини.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Русские женщины»: тема долга, верности, подвига. Авторская позиция.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "Л.Н. Толстой: страницы биографии. «Детство»: история создания, автобиографическая основа.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Детство»: мир детства, становление характера Николеньки.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Детство»: мир детства, становление характера Николеньки.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "А.П. Чехов: страницы биографии. «Хамелеон»: сюжет, композиция, приём «говорящих фамилий».", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "А.П. Чехов: страницы биографии. «Хамелеон»: сюжет, композиция, приём «говорящих фамилий».", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "«Хамелеон»: сатира и юмор. Обобщение по четверти. Подготовка к итоговому срезу.", "date": "", "status": "Запланировано"}, {"teacher": "Окунцова М.Д.", "class": "7", "subject": "Литература", "topic": "Резерв.", "date": "", "status": "Запланировано"}];
+        
+        let ktpData = JSON.parse(localStorage.getItem('ktpData_v1'));
+        
+        // Инициализация при первом запуске (если локальное хранилище пустое)
+        if (!ktpData || ktpData.length === 0) {
+            ktpData = initialData;
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('ktpData_v1', JSON.stringify(ktpData));
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            const filterTeacher = document.getElementById('filter-teacher').value;
+            const filterClass = document.getElementById('filter-class').value;
+
+            ktpData.forEach((row, index) => {
+                if (filterTeacher && row.teacher !== filterTeacher) return;
+                if (filterClass && row.class !== filterClass) return;
+
+                const tr = document.createElement('tr');
+                
+                // Цветовая индикация статуса
+                if (row.status === 'Проведено') {
+                    tr.className = 'bg-green-50 hover:bg-green-100 transition-colors';
+                } else {
+                    tr.className = 'bg-yellow-50 hover:bg-yellow-100 transition-colors border-b';
+                }
+                
+                tr.innerHTML = `
+                    <td class="p-3 border-b border-gray-200 font-medium">${row.teacher}</td>
+                    <td class="p-3 border-b border-gray-200 text-center">${row.class}</td>
+                    <td class="p-3 border-b border-gray-200">${row.subject}</td>
+                    <td class="p-3 border-b border-gray-200 font-medium">${row.topic}</td>
+                    <td class="p-3 border-b border-gray-200">
+                        <input type="date" value="${row.date || ''}" onchange="updateDate(${index}, this.value)" 
+                               class="border border-gray-300 p-1 w-full rounded focus:ring-blue-500 bg-white bg-opacity-70">
+                    </td>
+                    <td class="p-3 border-b border-gray-200">
+                        <select onchange="updateStatus(${index}, this.value)" 
+                                class="border border-gray-300 p-1 w-full rounded focus:ring-blue-500 bg-white bg-opacity-70 font-medium ${row.status === 'Проведено' ? 'text-green-700' : 'text-yellow-700'}">
+                            <option value="Запланировано" ${row.status === 'Запланировано' ? 'selected' : ''}>Запланировано</option>
+                            <option value="Проведено" ${row.status === 'Проведено' ? 'selected' : ''}>Проведено</option>
+                        </select>
+                    </td>
+                    <td class="p-3 border-b border-gray-200 text-center">
+                        <button onclick="deleteRow(${index})" class="text-red-400 hover:text-red-600 transition-colors p-1" title="Удалить строку">
+                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateDate(index, newDate) {
+            ktpData[index].date = newDate;
+            saveData();
+        }
+
+        function updateStatus(index, newStatus) {
+            ktpData[index].status = newStatus;
+            saveData();
+            renderTable();
+        }
+
+        function deleteRow(index) {
+            if(confirm('Точно удалить эту запись?')) {
+                ktpData.splice(index, 1);
+                saveData();
+                renderTable();
+            }
+        }
+
+        function addRow() {
+            document.getElementById('add-modal').classList.remove('hidden');
+            document.getElementById('add-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('add-modal').classList.add('hidden');
+            document.getElementById('add-modal').classList.remove('flex');
+        }
+
+        function saveNewRow() {
+            const teacher = document.getElementById('new-teacher').value;
+            const cls = document.getElementById('new-class').value;
+            const subject = document.getElementById('new-subject').value;
+            const topic = document.getElementById('new-topic').value;
+            const date = document.getElementById('new-date').value;
+
+            if(teacher && topic) {
+                ktpData.push({
+                    teacher: teacher,
+                    class: cls,
+                    subject: subject,
+                    topic: topic,
+                    date: date,
+                    status: 'Запланировано'
+                });
+                saveData();
+                renderTable();
+                closeModal();
+                
+                // Очистка полей
+                document.getElementById('new-topic').value = '';
+                document.getElementById('new-date').value = '';
+            } else {
+                alert('Пожалуйста, заполните преподавателя и тему урока');
+            }
+        }
+
+        // Слушатели фильтров
+        document.getElementById('filter-teacher').addEventListener('change', renderTable);
+        document.getElementById('filter-class').addEventListener('change', renderTable);
+
+        // Первичный рендер
+        renderTable();
+    </script>
+</body>
+</html>
